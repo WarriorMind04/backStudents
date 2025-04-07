@@ -1,0 +1,37 @@
+name: CD
+
+on:
+  push:
+    branches: [main] # Simplificado a solo main, ajusta si usas master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18.x"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+        # Asegúrate de tener un script "test" en package.json
+
+      - name: Deploy to Render
+        uses: JorgeLNJunior/render-deploy@v1.4.4
+        with:
+          service-id: ${{ secrets.RENDER_SERVICE_ID }}
+          api-key: ${{ secrets.RENDER_API_KEY }}
+          wait-deploy: true # Espera a que el despliegue termine
+          clear-cache: true # Limpia la caché para evitar problemas
+
+      - name: Notify on failure
+        if: failure()
+        run: echo "Deployment failed! Check logs for details."
+        # Opcional: integra con Slack o Discord usando una acción como "slackapi/slack-github-action"
