@@ -2,7 +2,7 @@ const express = require('express');
 
 const router = express.Router();
 const StudentHttpHandler = require('../handlers/student'); // Ajusta la ruta según tu estructura
-const StudentServiceFactory = require('../data');   // Ajusta la ruta según tu estructura
+const StudentServiceFactory = require('../school');   // Ajusta la ruta según tu estructura
 const StudentController = require('../controllers/student'); // Ajusta la ruta según tu estructura
 
 // Create the service and controller

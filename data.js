@@ -1,4 +1,4 @@
-const DBService = require('../dbService');
+const DBService = require('./dbService');
 
 class FakeService extends DBService {
   constructor() {
@@ -18,29 +18,55 @@ class FakeService extends DBService {
     });
   }
 
+  getStudentStatus(calificacion, deuda){
+    const aprobado = calificacion >= 70;
+    const tieneDeuda = deuda === 'Sí';
+
+    if (aprobado && !tieneDeuda) return 'aprobado';
+    if (!aprobado && !tieneDeuda) return 'pendiente';
+    if (aprobado && tieneDeuda) return 'reestructura';
+    if (!aprobado && tieneDeuda) return 'expulsado';
+  }
+
   async getAllStudents() {
-    return Array.from(this.students.values());
+    return Array.from(this.students.values()).map(student => ({
+      matricula: student.matricula,
+      nombre: student.nombre,
+      estatus: this.getStudentStatus(student.calificacion, student.deuda)
+    }));
   }
 
   async getStudentById(matricula) {
-    return this.students.get(matricula);
+    const student = this.students.get(matricula);
+    if (!student) return null;
+    return {
+      matricula: student.matricula,
+      nombre: student.nombre,
+      estatus: this.getStudentStatus(student.calificacion, student.deuda)
+    };
   }
 
   async createStudent(nombre, calificacion, deuda) {
     const matricula = Date.now().toString();
     const student = { matricula, nombre, calificacion, deuda };
     this.students.set(matricula, student);
-    return student;
+    return {
+      matricula,
+      nombre,
+      estatus: this.getStudentStatus(calificacion, deuda)
+    };
   }
 
   async updateStudent(matricula, nombre, calificacion, deuda) {
     const student = this.students.get(matricula);
-    if (!student) {
-      return null; // O podrías lanzar un error si prefieres
-    }
+    if (!student) return null;
     const updatedStudent = { matricula, nombre, calificacion, deuda };
     this.students.set(matricula, updatedStudent);
-    return updatedStudent;
+    return {
+      matricula,
+      nombre,
+      estatus: this.getStudentStatus(calificacion, deuda)
+    };
   }
 
   async deleteStudent(matricula) {
